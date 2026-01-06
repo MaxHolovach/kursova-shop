@@ -1,10 +1,7 @@
 const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
-    userId: {
-        type: String, 
-        required: true 
-    },
+    userId: { type: String, required: true },
     products: [
         {
             name: String,
@@ -13,22 +10,9 @@ const orderSchema = new mongoose.Schema({
             qty: { type: Number, default: 1 }
         }
     ],
-    totalPrice: {
-        type: Number,
-        required: true
-    },
-    shippingAddress: {
-        type: String,
-        default: "Не вказано" 
-    },
-    status: {
-        type: String,
-        default: "В обробці"
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
+    totalPrice: { type: Number, required: true },
+    status: { type: String, default: "В обробці" },
+    createdAt: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model('Order', orderSchema);

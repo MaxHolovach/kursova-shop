@@ -2,11 +2,9 @@ import { useState } from 'react';
 
 const SERVER_URL = 'https://my-shop-api-rgya.onrender.com';
 
-// 👇 ТЕПЕР МИ ПРИЙМАЄМО cart, removeFromCart, clearCart ЯК PROPS
 const Cart = ({ cart, removeFromCart, clearCart, setView }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Безпечна перевірка (якщо cart раптом undefined, використовуємо пустий масив)
   const safeCart = cart || [];
   const totalPrice = safeCart.reduce((acc, item) => acc + item.price, 0);
 

@@ -3,9 +3,8 @@ const router = express.Router();
 const Order = require('../models/Order');
 
 router.post('/', async (req, res) => {
-  console.log("Отримано нове замовлення:", req.body);
-
   try {
+    // Ми беремо тільки те, що надсилає Cart.jsx
     const { userId, products, totalPrice } = req.body;
     
     const newOrder = new Order({
@@ -15,12 +14,10 @@ router.post('/', async (req, res) => {
     });
 
     const savedOrder = await newOrder.save();
-    console.log("Замовлення збережено:", savedOrder._id);
-    
     res.status(201).json(savedOrder);
   } catch (error) {
-    console.error("Помилка при створенні замовлення:", error);
-    res.status(500).json({ message: "Помилка сервера при створенні замовлення" });
+    console.error("Помилка:", error);
+    res.status(500).json({ message: error.message });
   }
 });
 
