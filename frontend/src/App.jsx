@@ -15,7 +15,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const API_KEY = 'ak_wy65ge0uulyzj5pwemhdm16mntbmejguu297rv4khpshixm';
 const API_HOST = 'https://api.openwebninja.com/realtime-amazon-data';
-const SERVER_URL = 'http://localhost:5000'; 
+const SERVER_URL = 'https://my-shop-api-rgya.onrender.com';
 
 // --- РЕЗЕРВНІ ДАНІ (MOCK DATA) ---
 const MOCK_PRODUCTS = [
@@ -51,7 +51,7 @@ const MOCK_PRODUCTS = [
     product_star_rating: '4.7',
     product_num_ratings: '2100'
   },
-   {
+  {
     asin: 'MOCK_005',
     product_title: 'DJI Mini 4 Pro (DJI RC 2) - Mini Drone',
     product_price: '$959.00',
@@ -101,7 +101,7 @@ const searchAmazonProducts = async (query, page = 1) => {
       product_condition: 'ALL'
     },
     headers: {
-      'x-api-key': 'ak_wy65ge0uulyzj5pwemhdm16mntbmejguu297rv4khpshixm' 
+      'x-api-key': 'ak_wy65ge0uulyzj5pwemhdm16mntbmejguu297rv4khpshixm'
     }
   };
 
@@ -109,10 +109,10 @@ const searchAmazonProducts = async (query, page = 1) => {
     const response = await axios.request(options);
     // Судячи зі скріна, структура відповіді така ж: data -> data -> products
     const data = response.data.data.products || [];
-    
+
     if (data.length === 0) {
-        console.warn("API нічого не знайшов, перемикаюсь на демо");
-        return MOCK_PRODUCTS;
+      console.warn("API нічого не знайшов, перемикаюсь на демо");
+      return MOCK_PRODUCTS;
     }
     return data;
 
@@ -125,14 +125,14 @@ const searchAmazonProducts = async (query, page = 1) => {
 };
 
 const getProxyImage = (url) => {
-    if (!url) return 'https://via.placeholder.com/300?text=No+Image';
-    if (url.includes('weserv.nl') || !url.startsWith('http')) return url;
-    return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&il&w=600&output=webp`;
+  if (!url) return 'https://via.placeholder.com/300?text=No+Image';
+  if (url.includes('weserv.nl') || !url.startsWith('http')) return url;
+  return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&il&w=600&output=webp`;
 };
 
 const getPriceValue = (priceStr) => {
-    if (!priceStr) return 0;
-    return parseFloat(String(priceStr).replace(/[^0-9.]/g, '')) || 0;
+  if (!priceStr) return 0;
+  return parseFloat(String(priceStr).replace(/[^0-9.]/g, '')) || 0;
 };
 
 
@@ -156,7 +156,7 @@ function App() {
   const [newRating, setNewRating] = useState(5);
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [amazonReviews, setAmazonReviews] = useState([]);
-  
+
   const brands = ['Всі', 'Samsung', 'LG', 'Bosch', 'Dyson', 'Apple'];
 
 
@@ -174,12 +174,12 @@ function App() {
   };
 
   const loadProducts = async () => {
-      setLoading(true);
-      const apiResults = await searchAmazonProducts(currentSearchTerm, currentPage);
-      const formatted = formatProducts(apiResults);
-      setProducts(formatted);
-      setLoading(false);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    setLoading(true);
+    const apiResults = await searchAmazonProducts(currentSearchTerm, currentPage);
+    const formatted = formatProducts(apiResults);
+    setProducts(formatted);
+    setLoading(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const fetchComments = async (productId) => {
@@ -192,69 +192,69 @@ function App() {
   };
 
   const getAmazonReviews = async (asin) => {
-  if (asin.startsWith('MOCK_')) {
+    if (asin.startsWith('MOCK_')) {
       return MOCK_REVIEWS;
-  }
+    }
 
-  const options = {
-    method: 'GET',
-    url: 'https://api.openwebninja.com/realtime-amazon-data/product-reviews',
-    params: {
-      asin: asin,
-      country: 'US',
-      page: '1',
-      sort_by: 'TOP_REVIEWS', // Сортування за популярністю
-      star_rating: 'ALL',     // Всі оцінки, а не тільки 5 зірок
-      verified_purchases_only: 'false',
-      images_or_videos_only: 'false'
-    },
-    headers: {
-      'x-api-key': 'ak_wy65ge0uulyzj5pwemhdm16mntbmejguu297rv4khpshixm'
+    const options = {
+      method: 'GET',
+      url: 'https://api.openwebninja.com/realtime-amazon-data/product-reviews',
+      params: {
+        asin: asin,
+        country: 'US',
+        page: '1',
+        sort_by: 'TOP_REVIEWS', // Сортування за популярністю
+        star_rating: 'ALL',     // Всі оцінки, а не тільки 5 зірок
+        verified_purchases_only: 'false',
+        images_or_videos_only: 'false'
+      },
+      headers: {
+        'x-api-key': 'ak_wy65ge0uulyzj5pwemhdm16mntbmejguu297rv4khpshixm'
+      }
+    };
+
+    try {
+      const response = await axios.request(options);
+
+      const reviews = response.data.data.reviews || [];
+
+      if (reviews.length === 0) {
+        console.warn("API не знайшов відгуків, показуємо демо");
+        return MOCK_REVIEWS;
+      }
+
+      return reviews;
+
+    } catch (error) {
+      console.error("Помилка завантаження відгуків (нове API):", error);
+      return MOCK_REVIEWS;
     }
   };
 
-  try {
-    const response = await axios.request(options);
-    
-    const reviews = response.data.data.reviews || [];
-    
-    if (reviews.length === 0) {
-       console.warn("API не знайшов відгуків, показуємо демо");
-       return MOCK_REVIEWS;
-    }
-    
-    return reviews;
-
-  } catch (error) {
-    console.error("Помилка завантаження відгуків (нове API):", error);
-    return MOCK_REVIEWS;
-  }
-};
-
   const handleBrandClick = (brand) => {
-      setSelectedBrand(brand);
-      setSearchQuery('');
-      setCurrentPage(1);
-      
-      if (brand === 'Всі') {
-          setCurrentSearchTerm('electronics');
-      } else {
-          setCurrentSearchTerm(`${brand} electronics`);
-      }
+    setSelectedBrand(brand);
+    setSearchQuery('');
+    setCurrentPage(1);
+
+    if (brand === 'Всі') {
+      setCurrentSearchTerm('electronics');
+    } else {
+      setCurrentSearchTerm(`${brand} electronics`);
+    }
   };
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
-    
+
     setSelectedBrand('Всі');
     setCurrentPage(1);
     setCurrentSearchTerm(`${searchQuery} electronics`);
   };
 
   const changePage = (newPage) => {
-      if (newPage < 1) return;
-      setCurrentPage(newPage);
+    if (newPage < 1) return;
+    setCurrentPage(newPage);
   };
 
   const handleSort = (option) => {
@@ -338,12 +338,27 @@ function App() {
     toast.info("Ви вийшли з акаунту");
   };
 
+  const handleDeleteComment = async (commentId) => {
+    // Питаємо підтвердження (щоб випадково не видалити)
+    if (!window.confirm("Видалити цей відгук?")) return;
+
+    try {
+      await axios.delete(`${SERVER_URL}/api/comments/${commentId}`);
+      // Оновлюємо список на екрані, прибираючи видалений коментар
+      setComments((prev) => prev.filter((c) => c._id !== commentId));
+      toast.success("Відгук видалено! 🗑️");
+    } catch (error) {
+      console.error(error);
+      toast.error("Не вдалося видалити відгук");
+    }
+  };
+
   // --- ЕФЕКТИ ---
 
   useEffect(() => {
     const savedWishlist = localStorage.getItem('wishlist');
     if (savedWishlist) setWishlist(JSON.parse(savedWishlist));
-    
+
     const savedUser = localStorage.getItem('user');
     if (savedUser) setUser(JSON.parse(savedUser));
   }, []);
@@ -354,7 +369,7 @@ function App() {
 
   useEffect(() => {
     if (view === 'shop') {
-        loadProducts();
+      loadProducts();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, currentSearchTerm, view]);
@@ -384,7 +399,7 @@ function App() {
       <Header user={user} onLogout={handleLogout} setView={setView} currentView={view} />
 
       <main className="flex-grow w-full px-4 py-6">
-        
+
         {view === 'shop' && (
           <div className="max-w-7xl mx-auto mb-8">
             <form onSubmit={handleSearch} className="flex gap-2 mb-6 max-w-4xl mx-auto">
@@ -404,9 +419,9 @@ function App() {
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-gray-800/50 p-4 rounded-xl">
               <div className="flex flex-wrap justify-center gap-2">
                 {brands.map((brand) => (
-                  <button 
-                    key={brand} 
-                    onClick={() => handleBrandClick(brand)} 
+                  <button
+                    key={brand}
+                    onClick={() => handleBrandClick(brand)}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all shadow-sm ${selectedBrand === brand ? 'bg-blue-600 text-white shadow-blue-500/50' : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'}`}
                   >
                     {brand}
@@ -435,12 +450,12 @@ function App() {
 
         {view === 'details' && selectedProduct && (
           <div className="max-w-6xl mx-auto mt-4">
-            
+
             <div className="bg-gray-800 rounded-xl p-8 shadow-2xl mb-8">
               <button onClick={() => setView('shop')} className="mb-6 text-gray-400 hover:text-white flex items-center gap-2 transition">← Назад до каталогу</button>
               <div className="flex flex-col md:flex-row gap-10">
                 <div className="md:w-1/2 bg-white rounded-xl p-6 flex items-center justify-center overflow-hidden relative">
-                  <button 
+                  <button
                     onClick={() => toggleWishlist(selectedProduct)}
                     className="absolute top-4 right-4 p-3 rounded-full bg-gray-100 hover:bg-gray-200 transition text-2xl shadow-md z-10"
                     title="Додати в обране"
@@ -462,17 +477,17 @@ function App() {
                     )}
                   </div>
                   <div className="bg-gray-700/50 p-4 rounded-lg mb-8">
-                    <p className="text-gray-300 leading-relaxed text-sm md:text-base">{selectedProduct.description || selectedProduct.name}<br/><br/>Це оригінальний товар з каталогу Amazon (US). Доставка може займати певний час.</p>
+                    <p className="text-gray-300 leading-relaxed text-sm md:text-base">{selectedProduct.description || selectedProduct.name}<br /><br />Це оригінальний товар з каталогу Amazon (US). Доставка може займати певний час.</p>
                   </div>
                   <div className="flex gap-4">
-                    <button 
-                      onClick={() => handleAddToCart(selectedProduct)} 
+                    <button
+                      onClick={() => handleAddToCart(selectedProduct)}
                       className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg font-bold text-lg transition shadow-lg shadow-green-900/20"
                     >
                       Додати в кошик
                     </button>
                     {selectedProduct.originalData && selectedProduct.originalData.product_url && (
-                      <a 
+                      <a
                         href={selectedProduct.originalData.product_url}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -488,22 +503,22 @@ function App() {
 
             <div className="bg-gray-800 rounded-xl p-8 shadow-2xl">
               <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">💬 Відгуки користувачів</h2>
-              
+
               <form onSubmit={handlePostComment} className="mb-8 bg-gray-700/30 p-6 rounded-xl border border-gray-700">
                 <div className="mb-4">
-                    <label className="block text-gray-300 mb-2 font-medium">Ваша оцінка:</label>
-                    <div className="flex gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                            <button 
-                                key={star}
-                                type="button"
-                                onClick={() => setNewRating(star)}
-                                className={`text-2xl transition-transform hover:scale-110 ${star <= newRating ? 'text-yellow-400' : 'text-gray-600'}`}
-                            >
-                                ★
-                            </button>
-                        ))}
-                    </div>
+                  <label className="block text-gray-300 mb-2 font-medium">Ваша оцінка:</label>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setNewRating(star)}
+                        className={`text-2xl transition-transform hover:scale-110 ${star <= newRating ? 'text-yellow-400' : 'text-gray-600'}`}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <label className="block text-gray-300 mb-2 font-medium">Залишити свій відгук:</label>
@@ -520,21 +535,32 @@ function App() {
 
               <div className="space-y-8">
                 <div>
-                   <h3 className="text-xl text-white font-semibold mb-4 border-l-4 border-blue-500 pl-3">Відгуки клієнтів TechnoSvit</h3>
-                   <div className="space-y-4">
+                  <h3 className="text-xl text-white font-semibold mb-4 border-l-4 border-blue-500 pl-3">Відгуки клієнтів TechnoSvit</h3>
+                  <div className="space-y-4">
                     {comments.length > 0 ? (
                       comments.map((comment) => (
-                        <div key={comment._id} className="bg-gray-900 p-4 rounded-xl border border-gray-700/50 shadow-sm">
+                        <div key={comment._id} className="bg-gray-900 p-4 rounded-xl border border-gray-700/50 shadow-sm relative group">
+                          {user && (
+                            (user.name || user.username || user.login || user.email) === comment.userName
+                          ) && (
+                              <button
+                                onClick={() => handleDeleteComment(comment._id)}
+                                className="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition"
+                                title="Видалити відгук"
+                              >
+                                🗑️
+                              </button>
+                            )}
                           <div className="flex justify-between items-start mb-2">
                             <div>
-                                <div className="font-bold text-blue-400 text-lg">{comment.userName}</div>
-                                <div className="flex text-yellow-400 text-sm mt-1">
-                                    {'★'.repeat(comment.rating || 5)} 
-                                    <span className="text-gray-600">{'★'.repeat(5 - (comment.rating || 5))}</span>
-                                </div>
+                              <div className="font-bold text-blue-400 text-lg">{comment.userName}</div>
+                              <div className="flex text-yellow-400 text-sm mt-1">
+                                {'★'.repeat(comment.rating || 5)}
+                                <span className="text-gray-600">{'★'.repeat(5 - (comment.rating || 5))}</span>
+                              </div>
                             </div>
-                            <div className="text-xs text-gray-500 font-mono bg-gray-800 px-2 py-1 rounded">
-                                {new Date(comment.createdAt).toLocaleDateString()}
+                            <div className="text-xs text-gray-500 font-mono bg-gray-800 px-2 py-1 mr-6 rounded">
+                              {new Date(comment.createdAt).toLocaleDateString()}
                             </div>
                           </div>
                           <p className="text-gray-300 mt-2">{comment.text}</p>
@@ -551,9 +577,9 @@ function App() {
                     <h3 className="text-xl text-white font-semibold mb-4 border-l-4 border-yellow-500 pl-3 flex items-center gap-2">
                       Відгуки з Amazon <span className="text-xs bg-yellow-600/20 text-yellow-500 px-2 py-0.5 rounded border border-yellow-600/50">Verified Purchase</span>
                     </h3>
-                    
+
                     {loadingReviews ? (
-                       <div className="text-gray-400 animate-pulse py-4">Завантаження відгуків з Amazon...</div>
+                      <div className="text-gray-400 animate-pulse py-4">Завантаження відгуків з Amazon...</div>
                     ) : amazonReviews.length > 0 ? (
                       <div className="space-y-4">
                         {amazonReviews.map((review, index) => (
@@ -573,17 +599,17 @@ function App() {
                               </div>
                             </div>
                             {review.review_title && (
-                                <h4 className="font-bold text-white mb-2 text-base">{review.review_title}</h4>
+                              <h4 className="font-bold text-white mb-2 text-base">{review.review_title}</h4>
                             )}
                             <p className="text-gray-300 leading-relaxed text-sm md:text-base">
-                                {review.review_comment}
+                              {review.review_comment}
                             </p>
                             {review.review_link && (
-                               <div className="mt-3 pt-3 border-t border-gray-800">
-                                   <a href={review.review_link} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:text-blue-400 hover:underline flex items-center gap-1 transition-colors">
-                                     Читати оригінал на Amazon ↗
-                                   </a>
-                               </div>
+                              <div className="mt-3 pt-3 border-t border-gray-800">
+                                <a href={review.review_link} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:text-blue-400 hover:underline flex items-center gap-1 transition-colors">
+                                  Читати оригінал на Amazon ↗
+                                </a>
+                              </div>
                             )}
                           </div>
                         ))}
@@ -611,37 +637,37 @@ function App() {
               ) : products.length > 0 ? (
                 products.map((product) => (
                   <div key={product._id} onClick={() => openProductDetails(product)} className="cursor-pointer transform hover:-translate-y-1 transition-transform duration-300">
-                    <ProductCard 
-                      product={product} 
+                    <ProductCard
+                      product={product}
                       isLiked={wishlist.some(item => item._id === product._id)}
                       onToggleLike={() => toggleWishlist(product)}
-                      onAddToCart={() => handleAddToCart(product)} 
+                      onAddToCart={() => handleAddToCart(product)}
                     />
                   </div>
                 ))
               ) : (
                 <div className="text-center w-full col-span-full py-20 text-gray-500 text-lg">
-                    {selectedBrand === 'Всі' && currentPage === 1 ? 'Введіть назву товару або оберіть бренд' : 'Товарів не знайдено'}
+                  {selectedBrand === 'Всі' && currentPage === 1 ? 'Введіть назву товару або оберіть бренд' : 'Товарів не знайдено'}
                 </div>
               )}
             </div>
 
             {products.length > 0 && !loading && (
               <div className="flex justify-center items-center gap-6 mt-12 mb-8">
-                <button 
-                  onClick={() => changePage(currentPage - 1)} 
+                <button
+                  onClick={() => changePage(currentPage - 1)}
                   disabled={currentPage === 1}
                   className={`px-6 py-3 rounded-lg font-bold transition flex items-center gap-2 ${currentPage === 1 ? 'bg-gray-800 text-gray-600 cursor-not-allowed' : 'bg-gray-700 hover:bg-gray-600 text-white'}`}
                 >
                   ← Назад
                 </button>
-                
+
                 <span className="text-xl font-mono text-blue-400 bg-gray-800 px-4 py-2 rounded-lg border border-gray-700">
                   Сторінка {currentPage}
                 </span>
 
-                <button 
-                  onClick={() => changePage(currentPage + 1)} 
+                <button
+                  onClick={() => changePage(currentPage + 1)}
                   className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition flex items-center gap-2"
                 >
                   Далі →

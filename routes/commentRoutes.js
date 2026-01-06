@@ -33,4 +33,14 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.delete('/:id', async (req, res) => {
+  try {
+    const deletedComment = await Comment.findByIdAndDelete(req.params.id);
+    if (!deletedComment) return res.status(404).json({ message: "Коментар не знайдено" });
+    res.json({ message: "Коментар видалено" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;
