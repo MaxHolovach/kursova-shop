@@ -36,7 +36,7 @@ const Cart = ({ cart, removeFromCart, clearCart, setView }) => {
 
       if (response.ok) {
         alert("Замовлення успішно оформлено! 🚀");
-        if (clearCart) clearCart(); // Викликаємо очищення, якщо функція передана
+        if (clearCart) clearCart();
         if (setView) setView('orders');
       } else {
         const errorData = await response.json();

@@ -4,19 +4,30 @@ const Order = require('../models/Order');
 
 router.post('/', async (req, res) => {
   try {
-    // Ми беремо тільки те, що надсилає Cart.jsx
+    console.log("Отримано замовлення:", req.body);
+
     const { userId, products, totalPrice } = req.body;
-    
+
+    const orderProducts = products.map(item => ({
+        _id: item._id,
+        name: item.name,
+        price: item.price,
+        image: item.image,
+        qty: item.qty || 1
+    }));
+
     const newOrder = new Order({
       userId,
-      products,
+      products: orderProducts,
       totalPrice
     });
 
     const savedOrder = await newOrder.save();
+    console.log("Успішно збережено!");
     res.status(201).json(savedOrder);
+
   } catch (error) {
-    console.error("Помилка:", error);
+    console.error("ПОМИЛКА СЕРВЕРА:", error);
     res.status(500).json({ message: error.message });
   }
 });

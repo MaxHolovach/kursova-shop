@@ -4,6 +4,8 @@ const orderSchema = new mongoose.Schema({
     userId: { type: String, required: true },
     products: [
         {
+            _id: { type: String }, 
+            
             name: String,
             price: Number,
             image: String,
