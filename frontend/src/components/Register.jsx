@@ -1,18 +1,17 @@
 import { useState } from 'react';
 
+const SERVER_URL = 'https://my-shop-api-rgya.onrender.com';
+
 const Register = () => {
-  // Стан для даних форми
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: ''
   });
 
-  // Стан для повідомлень (успіх або помилка)
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  // Функція, яка оновлює стан при введенні тексту
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -20,14 +19,13 @@ const Register = () => {
     });
   };
 
-  // Функція відправки форми на сервер
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Щоб сторінка не перезавантажувалась
+    e.preventDefault();
     setMessage('');
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const response = await fetch(`${SERVER_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -39,7 +37,7 @@ const Register = () => {
 
       if (response.ok) {
         setMessage('Успішна реєстрація! Тепер ви можете увійти.');
-        setFormData({ username: '', email: '', password: '' }); // Очистити поля
+        setFormData({ username: '', email: '', password: '' });
       } else {
         setError(data.message || 'Щось пішло не так');
       }
@@ -49,50 +47,46 @@ const Register = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 bg-white p-8 border border-gray-200 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">Реєстрація</h2>
+    <div className="max-w-md mx-auto mt-10 bg-gray-800 p-8 border border-gray-700 rounded-lg shadow-lg text-white">
+      <h2 className="text-2xl font-bold text-center mb-6">Реєстрація</h2>
 
-      {/* Повідомлення про успіх або помилку */}
-      {message && <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">{message}</div>}
-      {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">{error}</div>}
+      {message && <div className="mb-4 p-3 bg-green-900/50 text-green-200 rounded border border-green-700">{message}</div>}
+      {error && <div className="mb-4 p-3 bg-red-900/50 text-red-200 rounded border border-red-700">{error}</div>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Ім'я */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Ім'я користувача</label>
+          <label className="block text-sm font-medium text-gray-300">Ім'я користувача</label>
           <input
             type="text"
             name="username"
             value={formData.username}
             onChange={handleChange}
             required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
-        {/* Email */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Email</label>
+          <label className="block text-sm font-medium text-gray-300">Email</label>
           <input
             type="email"
             name="email"
             value={formData.email}
             onChange={handleChange}
             required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
-        {/* Пароль */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Пароль</label>
+          <label className="block text-sm font-medium text-gray-300">Пароль</label>
           <input
             type="password"
             name="password"
             value={formData.password}
             onChange={handleChange}
             required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 

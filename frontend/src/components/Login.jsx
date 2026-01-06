@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+const SERVER_URL = 'https://my-shop-api-rgya.onrender.com';
+
 const Login = ({ onLoginSuccess }) => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
@@ -9,7 +11,7 @@ const Login = ({ onLoginSuccess }) => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch(`${SERVER_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -18,7 +20,6 @@ const Login = ({ onLoginSuccess }) => {
       const data = await response.json();
 
       if (response.ok) {
-        // Якщо все добре, передаємо дані нагору в App.jsx
         onLoginSuccess(data.token, data.user);
       } else {
         setError(data.message || 'Помилка входу');

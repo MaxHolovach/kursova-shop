@@ -1,9 +1,8 @@
 import React from 'react';
-import ProductCard from './Product'; // Перевір шлях, можливо './ProductCard' або './Product'
+import ProductCard from './Product';
 import { useCart } from '../context/CartContext';
 import { toast } from 'react-toastify';
 
-// Допоміжні функції (щоб не дублювати код, можна винести в utils.js, але поки залишимо тут)
 const getProxyImage = (url) => {
     if (!url) return 'https://via.placeholder.com/300?text=No+Image';
     if (url.includes('weserv.nl') || !url.startsWith('http')) return url;
@@ -15,7 +14,6 @@ const getPriceValue = (priceStr) => {
     return parseFloat(String(priceStr).replace(/[^0-9.]/g, '')) || 0;
 };
 
-// 👇 Додаємо onProductClick в пропси
 const Wishlist = ({ wishlist, toggleWishlist, setView, onProductClick }) => {
   const { addToCart } = useCart();
 
@@ -23,7 +21,7 @@ const Wishlist = ({ wishlist, toggleWishlist, setView, onProductClick }) => {
       addToCart({
           _id: product._id,
           name: product.name,
-          image: getProxyImage(product.image), // Важливо: проксіюємо картинку для кошика
+          image: getProxyImage(product.image),
           price: getPriceValue(product.price),
           brand: 'Amazon Product'
       });
@@ -51,7 +49,6 @@ const Wishlist = ({ wishlist, toggleWishlist, setView, onProductClick }) => {
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {wishlist.map((product) => (
-          // 👇 Додаємо обгортку з onClick для переходу на сторінку товару
           <div 
              key={product._id} 
              className="relative cursor-pointer transform hover:-translate-y-1 transition-transform duration-300"
@@ -61,7 +58,7 @@ const Wishlist = ({ wishlist, toggleWishlist, setView, onProductClick }) => {
                 product={product} 
                 isLiked={true} 
                 onToggleLike={() => toggleWishlist(product)}
-                onAddToCart={() => handleAddToCart(product)} // Передаємо функцію
+                onAddToCart={() => handleAddToCart(product)}
              />
           </div>
         ))}

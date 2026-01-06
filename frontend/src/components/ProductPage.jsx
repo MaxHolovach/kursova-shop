@@ -1,11 +1,9 @@
-// src/components/ProductPage.jsx
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const ProductPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Отримуємо дані про товар, які передали через Link
   const { product } = location.state || {};
 
   if (!product) {
@@ -22,7 +20,6 @@ const ProductPage = () => {
       </button>
 
       <div className="bg-gray-800 rounded-xl p-8 flex flex-col md:flex-row gap-10 shadow-lg">
-        {/* Ліва частина: Фото */}
         <div className="md:w-1/2 bg-white rounded-lg p-4 flex items-center justify-center">
           <img 
             src={product.product_photo} 
@@ -31,7 +28,6 @@ const ProductPage = () => {
           />
         </div>
 
-        {/* Права частина: Інфо */}
         <div className="md:w-1/2 flex flex-col justify-center">
           <h1 className="text-3xl font-bold mb-4">{product.product_title}</h1>
           
