@@ -9,15 +9,13 @@ import Wishlist from './components/Wishlist';
 import Orders from './components/Orders';
 import './App.css';
 import axios from 'axios';
-import { useCart } from './context/CartContext';
+// import { useCart } from './context/CartContext'; // 👇 ПРИБРАЛИ КОНТЕКСТ, ЩОБ НЕ БУЛО КОНФЛІКТІВ
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_KEY = 'ak_wy65ge0uulyzj5pwemhdm16mntbmejguu297rv4khpshixm';
-const API_HOST = 'https://api.openwebninja.com/realtime-amazon-data';
+// Константи
 const SERVER_URL = 'https://my-shop-api-rgya.onrender.com';
 
-// --- РЕЗЕРВНІ ДАНІ (MOCK DATA) ---
 const MOCK_PRODUCTS = [
   {
     asin: 'MOCK_001',
@@ -60,6 +58,7 @@ const MOCK_PRODUCTS = [
     product_num_ratings: '850'
   }
 ];
+
 const MOCK_REVIEWS = [
   {
     review_id: 'mock_r1',
@@ -87,11 +86,9 @@ const MOCK_REVIEWS = [
   }
 ];
 
-// 👇 Знайди і заміни цю функцію
 const searchAmazonProducts = async (query, page = 1) => {
   const options = {
     method: 'GET',
-    // 👇 Нова пряма адреса API
     url: 'https://api.openwebninja.com/realtime-amazon-data/search',
     params: {
       query: query,
@@ -107,7 +104,6 @@ const searchAmazonProducts = async (query, page = 1) => {
 
   try {
     const response = await axios.request(options);
-    // Судячи зі скріна, структура відповіді така ж: data -> data -> products
     const data = response.data.data.products || [];
 
     if (data.length === 0) {
@@ -118,7 +114,6 @@ const searchAmazonProducts = async (query, page = 1) => {
 
   } catch (error) {
     console.error("Помилка нового API:", error);
-    // Якщо нове API теж не працює (наприклад, через CORS або помилку ключа) - показуємо демо
     toast.warning("API помилка. Показано демо-товари 🛠️");
     return MOCK_PRODUCTS;
   }
@@ -137,9 +132,10 @@ const getPriceValue = (priceStr) => {
 
 
 function App() {
-  const { addToCart } = useCart();
-
   // --- СТЕЙТИ ---
+  // 👇 ДОДАНО: Локальний стейт кошика (тепер addToCart і removeFromCart працюють з одним масивом)
+  const [cart, setCart] = useState([]);
+  
   const [currentPage, setCurrentPage] = useState(1);
   const [currentSearchTerm, setCurrentSearchTerm] = useState('electronics');
   const [products, setProducts] = useState([]);
@@ -159,6 +155,35 @@ function App() {
 
   const brands = ['Всі', 'Samsung', 'LG', 'Bosch', 'Dyson', 'Apple'];
 
+  // --- ЛОГІКА КОШИКА (Виправлена) ---
+  const handleAddToCart = (product) => {
+    const newProduct = {
+      _id: product._id,
+      name: product.name,
+      image: getProxyImage(product.image),
+      price: getPriceValue(product.price),
+      brand: 'Amazon Product'
+    };
+    
+    // Оновлюємо локальний стейт
+    setCart(prev => [...prev, newProduct]);
+
+    toast.success('Товар додано в кошик! 🛒', {
+      position: "bottom-right",
+      autoClose: 3000,
+      theme: "dark",
+    });
+  };
+
+  const removeFromCart = (productId) => {
+    setCart((prevCart) => prevCart.filter((item) => item._id !== productId));
+  };
+
+  const clearCart = () => {
+    setCart([]);
+  };
+
+  // --- ІНШІ ФУНКЦІЇ ---
 
   const formatProducts = (apiData) => {
     return apiData.map(item => ({
@@ -203,8 +228,8 @@ function App() {
         asin: asin,
         country: 'US',
         page: '1',
-        sort_by: 'TOP_REVIEWS', // Сортування за популярністю
-        star_rating: 'ALL',     // Всі оцінки, а не тільки 5 зірок
+        sort_by: 'TOP_REVIEWS',
+        star_rating: 'ALL',
         verified_purchases_only: 'false',
         images_or_videos_only: 'false'
       },
@@ -215,14 +240,12 @@ function App() {
 
     try {
       const response = await axios.request(options);
-
       const reviews = response.data.data.reviews || [];
 
       if (reviews.length === 0) {
         console.warn("API не знайшов відгуків, показуємо демо");
         return MOCK_REVIEWS;
       }
-
       return reviews;
 
     } catch (error) {
@@ -275,21 +298,6 @@ function App() {
     setView('details');
   };
 
-  const handleAddToCart = (product) => {
-    addToCart({
-      _id: product._id,
-      name: product.name,
-      image: getProxyImage(product.image),
-      price: getPriceValue(product.price),
-      brand: 'Amazon Product'
-    });
-    toast.success('Товар додано в кошик! 🛒', {
-      position: "bottom-right",
-      autoClose: 3000,
-      theme: "dark",
-    });
-  };
-
   const toggleWishlist = (product) => {
     const exists = wishlist.find(item => item._id === product._id);
     if (exists) {
@@ -339,12 +347,10 @@ function App() {
   };
 
   const handleDeleteComment = async (commentId) => {
-    // Питаємо підтвердження (щоб випадково не видалити)
     if (!window.confirm("Видалити цей відгук?")) return;
 
     try {
       await axios.delete(`${SERVER_URL}/api/comments/${commentId}`);
-      // Оновлюємо список на екрані, прибираючи видалений коментар
       setComments((prev) => prev.filter((c) => c._id !== commentId));
       toast.success("Відгук видалено! 🗑️");
     } catch (error) {
@@ -361,11 +367,20 @@ function App() {
 
     const savedUser = localStorage.getItem('user');
     if (savedUser) setUser(JSON.parse(savedUser));
+    
+    // 👇 Спробуємо відновити кошик з localStorage, якщо треба (необов'язково)
+    // const savedCart = localStorage.getItem('cart');
+    // if (savedCart) setCart(JSON.parse(savedCart));
   }, []);
 
   useEffect(() => {
     localStorage.setItem('wishlist', JSON.stringify(wishlist));
   }, [wishlist]);
+  
+  // Збереження кошика (необов'язково, але корисно)
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
 
   useEffect(() => {
     if (view === 'shop') {
@@ -388,15 +403,14 @@ function App() {
         setAmazonReviews([]);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view, selectedProduct]);
 
 
-  // --- JSX ---
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col font-sans">
       <ToastContainer />
-      <Header user={user} onLogout={handleLogout} setView={setView} currentView={view} />
+      {/* 👇 Передаємо cart.length у Header, щоб показувати кількість товарів */}
+      <Header user={user} onLogout={handleLogout} setView={setView} currentView={view} cartCount={cart.length} />
 
       <main className="flex-grow w-full px-4 py-6">
 
@@ -444,7 +458,17 @@ function App() {
 
         {view === 'register' && <Register />}
         {view === 'login' && <Login onLoginSuccess={handleLoginSuccess} />}
-        {view === 'cart' && <Cart setView={setView} />}
+        
+        {/* 👇 ТЕПЕР ТУТ ВСЕ ПРАВИЛЬНО: передаємо стейт cart та функції */}
+        {view === 'cart' && (
+          <Cart
+            cart={cart}
+            removeFromCart={removeFromCart}
+            clearCart={clearCart}
+            setView={setView}
+          />
+        )}
+        
         {view === 'wishlist' && <Wishlist wishlist={wishlist} toggleWishlist={toggleWishlist} setView={setView} onProductClick={openProductDetails} />}
         {view === 'orders' && <Orders setView={setView} />}
 
@@ -481,6 +505,7 @@ function App() {
                   </div>
                   <div className="flex gap-4">
                     <button
+                      // 👇 ТУТ ТЕЖ ВИКЛИКАЄМО ЛОКАЛЬНУ ФУНКЦІЮ
                       onClick={() => handleAddToCart(selectedProduct)}
                       className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg font-bold text-lg transition shadow-lg shadow-green-900/20"
                     >
@@ -641,6 +666,7 @@ function App() {
                       product={product}
                       isLiked={wishlist.some(item => item._id === product._id)}
                       onToggleLike={() => toggleWishlist(product)}
+                      // 👇 ТУТ ТЕЖ ВИКЛИКАЄМО ЛОКАЛЬНУ ФУНКЦІЮ
                       onAddToCart={() => handleAddToCart(product)}
                     />
                   </div>
