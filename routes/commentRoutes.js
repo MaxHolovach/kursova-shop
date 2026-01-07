@@ -12,9 +12,9 @@ router.get('/:asin', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-  const { asin, userId, username, text } = req.body;
+  const { asin, userId, username, text, rating } = req.body; 
   try {
-    const newComment = new Comment({ asin, userId, username, text });
+    const newComment = new Comment({ asin, userId, username, text, rating }); 
     await newComment.save();
     res.status(201).json(newComment);
   } catch (error) {

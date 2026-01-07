@@ -5,6 +5,7 @@ const commentSchema = new mongoose.Schema({
   userId: { type: String, required: true },
   username: { type: String, required: true },
   text: { type: String, required: true },
+  rating: { type: Number, default: 5 }, 
   createdAt: { type: Date, default: Date.now }
 });
 

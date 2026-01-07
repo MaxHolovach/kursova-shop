@@ -278,20 +278,32 @@ function App() {
     e.preventDefault();
     if (!newCommentText.trim()) return;
 
-    try {
-      await axios.post(`${SERVER_URL}/api/comments`, {
-        productId: selectedProduct._id,
-        userName: user ? (user.name || user.username || user.login || user.email) : 'Гість',
+    if (!user) {
+        toast.error("Увійдіть, щоб залишити відгук!");
+        return;
+    }
+
+    const commentData = {
+        asin: selectedProduct._id, 
+        userId: user._id || user.id || user.googleId || 'google_user', 
+        username: user.name || user.username || user.email || 'Гість',
         text: newCommentText,
         rating: newRating
-      });
+    };
+
+    console.log("📤 Відправляю коментар:", commentData);
+
+    try {
+      await axios.post(`${SERVER_URL}/api/comments`, commentData);
+
       setNewCommentText('');
       setNewRating(5);
       toast.success('Коментар додано!');
       fetchComments(selectedProduct._id);
+      
     } catch (error) {
-      toast.error('Помилка при додаванні коментаря');
-      console.error(error);
+      console.error("❌ Помилка додавання:", error.response?.data || error);
+      toast.error(error.response?.data?.message || 'Помилка 400: Невірні дані');
     }
   };
 
