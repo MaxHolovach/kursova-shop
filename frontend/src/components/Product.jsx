@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 
-// 👇 Додаємо onAddToCart в пропси
 const Product = ({ product, isLiked, onToggleLike, onAddToCart }) => {
     const [imgSrc, setImgSrc] = useState(null);
 
@@ -54,8 +53,8 @@ const Product = ({ product, isLiked, onToggleLike, onAddToCart }) => {
     </span>
                     <button 
                         onClick={(e) => {
-                            e.stopPropagation(); // Зупиняємо спливання події (щоб не відкривалась сторінка товару)
-                            if (onAddToCart) onAddToCart(); // Викликаємо функцію додавання
+                            e.stopPropagation();
+                            if (onAddToCart) onAddToCart();
                         }}
                         className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors z-20 relative"
                     >

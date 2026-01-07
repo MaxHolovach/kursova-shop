@@ -2,44 +2,23 @@ const express = require('express');
 const router = express.Router();
 const Comment = require('../models/Comment');
 
-router.get('/:productId', async (req, res) => {
+router.get('/:asin', async (req, res) => {
   try {
-    const comments = await Comment.find({ productId: req.params.productId }).sort({ createdAt: -1 });
+    const comments = await Comment.find({ asin: req.params.asin }).sort({ createdAt: -1 });
     res.json(comments);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
 router.post('/', async (req, res) => {
-  const { productId, userName, text, rating } = req.body; 
-
-  if (!text || !productId) {
-      return res.status(400).json({ message: "Текст коментаря обов'язковий" });
-  }
-
-  const comment = new Comment({
-    productId,
-    userName: userName || "Гість",
-    text,
-    rating: rating || 5
-  });
-
+  const { asin, userId, username, text } = req.body;
   try {
-    const newComment = await comment.save();
+    const newComment = new Comment({ asin, userId, username, text });
+    await newComment.save();
     res.status(201).json(newComment);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-
-router.delete('/:id', async (req, res) => {
-  try {
-    const deletedComment = await Comment.findByIdAndDelete(req.params.id);
-    if (!deletedComment) return res.status(404).json({ message: "Коментар не знайдено" });
-    res.json({ message: "Коментар видалено" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(400).json({ message: error.message });
   }
 });
 

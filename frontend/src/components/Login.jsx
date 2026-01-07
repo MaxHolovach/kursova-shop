@@ -1,68 +1,86 @@
 import { useState } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
 
-const SERVER_URL = 'https://my-shop-api-rgya.onrender.com';
+const SERVER_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:5000' 
+  : 'https://my-shop-api-rgya.onrender.com';
 
 const Login = ({ onLoginSuccess }) => {
   const [formData, setFormData] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-
     try {
       const response = await fetch(`${SERVER_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-
       const data = await response.json();
-
       if (response.ok) {
         onLoginSuccess(data.token, data.user);
       } else {
-        setError(data.message || 'Помилка входу');
+        alert(data.message || 'Помилка входу');
       }
-    } catch (err) {
-      setError('Помилка з\'єднання');
+    } catch (error) {
+      alert('Помилка з\'єднання');
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const res = await fetch(`${SERVER_URL}/api/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: credentialResponse.credential })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        onLoginSuccess(data.token, data.user);
+      } else {
+        alert("Помилка авторизації Google");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Не вдалося з'єднатися з сервером");
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 bg-gray-800 p-8 border border-gray-700 rounded-lg shadow-lg text-white">
-      <h2 className="text-2xl font-bold text-center mb-6">Вхід в акаунт</h2>
+    <div className="max-w-md mx-auto mt-10 bg-gray-800 p-8 rounded-xl shadow-lg text-white">
+      <h2 className="text-3xl font-bold mb-6 text-center">Вхід</h2>
       
-      {error && <div className="mb-4 p-3 bg-red-900/50 text-red-200 rounded border border-red-700">{error}</div>}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 mb-6">
         <div>
-          <label className="block text-sm font-medium text-gray-300">Email</label>
-          <input
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
-            className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500"
-            required
-          />
+          <label className="block text-gray-400 mb-1">Email</label>
+          <input type="email" name="email" onChange={handleChange} className="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:border-blue-500 outline-none text-white" required />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-300">Пароль</label>
-          <input
-            type="password"
-            value={formData.password}
-            onChange={(e) => setFormData({...formData, password: e.target.value})}
-            className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-blue-500 focus:border-blue-500"
-            required
-          />
+          <label className="block text-gray-400 mb-1">Пароль</label>
+          <input type="password" name="password" onChange={handleChange} className="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:border-blue-500 outline-none text-white" required />
         </div>
-        <button
-          type="submit"
-          className="w-full py-2 px-4 rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Увійти
-        </button>
+        <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded transition">Увійти</button>
       </form>
+
+      <div className="relative flex py-2 items-center">
+        <div className="flex-grow border-t border-gray-600"></div>
+        <span className="flex-shrink-0 mx-4 text-gray-400">або</span>
+        <div className="flex-grow border-t border-gray-600"></div>
+      </div>
+
+      <div className="flex justify-center mt-4">
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={() => console.log('Login Failed')}
+          theme="filled_black"
+          shape="pill"
+          width="100%"
+        />
+      </div>
     </div>
   );
 };

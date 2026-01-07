@@ -2,12 +2,17 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
-import { CartProvider } from './context/CartContext'; // <--- Імпорт
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { CartProvider } from './context/CartContext.jsx'; 
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <CartProvider>
-      <App />
-    </CartProvider>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <CartProvider>
+        <App />
+      </CartProvider>
+    </GoogleOAuthProvider>
   </React.StrictMode>,
 )

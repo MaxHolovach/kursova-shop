@@ -64,7 +64,6 @@ const Header = ({ user, onLogout, setView, currentView }) => {
               </button>
             </div>
           ) : (
-            // ВАРІАНТ ДЛЯ ГОСТЯ
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setView('login')}

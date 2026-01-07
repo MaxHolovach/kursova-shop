@@ -3,11 +3,10 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { OAuth2Client } = require('google-auth-library');
+const JWT_SECRET = 'secret_key_kursova_123';
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-const JWT_SECRET = 'secret_key_kursova_123'; // Секретний ключ
-
-// --- РЕЄСТРАЦІЯ ---
-// Шлях: POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -33,45 +32,85 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// --- ВХІД (LOGIN) ---
-// Шлях: POST /api/auth/login (Зверни увагу: тут просто '/login')
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1. Шукаємо користувача
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: 'Невірний email або пароль' });
     }
 
-    // 2. Перевіряємо пароль
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Невірний email або пароль' });
     }
 
-    // 3. Генеруємо токен
-    const token = jwt.sign(
-      { userId: user._id, role: user.role },
-      JWT_SECRET,
-      { expiresIn: '1h' }
+    const jwtToken = jwt.sign(
+        { id: user._id, isAdmin: user.isAdmin },
+        process.env.JWT_SECRET,
+        { expiresIn: '30d' }
     );
 
-    // 4. Віддаємо результат
     res.json({
-      token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role
-      }
+        token: jwtToken,
+        user: {
+            _id: user._id,
+            name: user.username,
+            email: user.email,
+            isAdmin: user.isAdmin
+        }
     });
 
   } catch (error) {
-    console.error("Помилка при вході:", error); // Вивід помилки в термінал
+    console.error("Помилка при вході:", error);
     res.status(500).json({ message: 'Помилка сервера' });
+  }
+});
+
+router.post('/google', async (req, res) => {
+  try {
+    const { token } = req.body;
+    
+    const ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID  
+    });
+    
+    const { name, email, sub: googleId } = ticket.getPayload();
+
+    let user = await User.findOne({ email });
+
+    if (user) {
+        if (!user.googleId) {
+            user.googleId = googleId;
+            await user.save();
+        }
+    } else {
+        user = new User({
+            username: name, 
+            email: email,
+            googleId: googleId,
+            password: bcrypt.hashSync(Math.random().toString(36).slice(-8), 10),
+            isAdmin: false
+        });
+        await user.save();
+    }
+
+    const jwtToken = jwt.sign(
+        { id: user._id, isAdmin: user.isAdmin },
+        process.env.JWT_SECRET,
+        { expiresIn: '30d' }
+    );
+
+    res.json({
+        token: jwtToken,
+        user: { _id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin }
+    });
+
+  } catch (error) {
+    console.error("Google Auth Error:", error);
+    res.status(400).json({ message: "Не вдалося увійти через Google" });
   }
 });
 

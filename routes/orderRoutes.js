@@ -6,10 +6,13 @@ router.post('/', async (req, res) => {
   try {
     console.log("Отримано замовлення:", req.body);
 
-    const { userId, products, totalPrice } = req.body;
-
-    const orderProducts = products.map(item => ({
-        _id: item._id,
+    const { userId, products, totalPrice, recipientName, shippingAddress, phone } = req.body;
+    
+    if (!recipientName || !shippingAddress || !phone) {
+        return res.status(400).json({ message: "Будь ласка, заповніть всі поля доставки" });
+    }
+    const formattedProducts = products.map(item => ({
+        _id: item._id, 
         name: item.name,
         price: item.price,
         image: item.image,
@@ -18,7 +21,10 @@ router.post('/', async (req, res) => {
 
     const newOrder = new Order({
       userId,
-      products: orderProducts,
+      recipientName,   
+      shippingAddress, 
+      phone,           
+      products: formattedProducts,
       totalPrice
     });
 
