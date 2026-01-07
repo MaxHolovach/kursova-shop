@@ -87,33 +87,20 @@ const MOCK_REVIEWS = [
 ];
 
 const searchAmazonProducts = async (query, page = 1) => {
-  const options = {
-    method: 'GET',
-    url: 'https://api.openwebninja.com/realtime-amazon-data/search',
-    params: {
-      query: query,
-      page: page.toString(),
-      country: 'US',
-      sort_by: 'RELEVANCE',
-      product_condition: 'ALL'
-    },
-    headers: {
-      'x-api-key': ''
-    }
-  };
-
   try {
-    const response = await axios.request(options);
-    const data = response.data.data.products || [];
-
+    const response = await axios.get(`${SERVER_URL}/api/amazon-search`, {
+      params: { query, page }
+    });
+    
+    const data = response.data || [];
     if (data.length === 0) {
-      console.warn("API нічого не знайшов, перемикаюсь на демо");
-      return MOCK_PRODUCTS;
+        console.warn("API нічого не знайшов");
+        return MOCK_PRODUCTS;
     }
     return data;
 
   } catch (error) {
-    console.error("Помилка нового API:", error);
+    console.error("Помилка пошуку:", error);
     toast.warning("API помилка. Показано демо-товари 🛠️");
     return MOCK_PRODUCTS;
   }
