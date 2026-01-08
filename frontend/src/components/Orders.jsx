@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 
-const SERVER_URL = 'https://my-shop-api-rgya.onrender.com';
+const SERVER_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:5000' 
+  : 'https://my-shop-api-rgya.onrender.com';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);

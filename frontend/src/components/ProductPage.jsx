@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
-const API_KEY = 'ak_ean9zu3wzmf2ohq15brehn1gpz3czk97nz741ut5lx8oiq8'; 
+const API_KEY = 'ak_6q3ze0sznehrbk5y09zlm1kxhrxpro8tgs0at43cj0ym5u3';
 
 const SERVER_URL = window.location.hostname === 'localhost' 
   ? 'http://localhost:5000' 

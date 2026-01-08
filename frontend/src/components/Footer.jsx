@@ -5,7 +5,6 @@ const Footer = () => {
     <footer className="bg-gray-900 text-gray-400 py-8 border-t border-gray-800 mt-auto">
       <div className="w-full px-8 grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
         
-        {/* Колонка 1: Про нас */}
         <div>
           <h3 className="text-white font-bold text-lg mb-4">ТехноСвіт</h3>
           <p>
@@ -14,7 +13,6 @@ const Footer = () => {
           </p>
         </div>
 
-        {/* Колонка 2: Навігація */}
         <div>
           <h3 className="text-white font-bold text-lg mb-4">Клієнтам</h3>
           <ul className="space-y-2">
@@ -24,7 +22,6 @@ const Footer = () => {
           </ul>
         </div>
 
-        {/* Колонка 3: Контакти */}
         <div>
           <h3 className="text-white font-bold text-lg mb-4">Контакти</h3>
           <ul className="space-y-2">
