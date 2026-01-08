@@ -4,37 +4,30 @@ const Order = require('../models/Order');
 
 router.post('/', async (req, res) => {
   try {
-    console.log("Отримано замовлення:", req.body);
+    const { userId, items, totalAmount, username } = req.body;
 
-    const { userId, products, totalPrice, recipientName, shippingAddress, phone } = req.body;
-    
-    if (!recipientName || !shippingAddress || !phone) {
-        return res.status(400).json({ message: "Будь ласка, заповніть всі поля доставки" });
+    if (!userId || !items || items.length === 0) {
+      return res.status(400).json({ message: 'Немає даних для замовлення (userId або товари)' });
     }
-    const formattedProducts = products.map(item => ({
-        _id: item._id, 
-        name: item.name,
-        price: item.price,
-        image: item.image,
-        qty: item.qty || 1
-    }));
 
     const newOrder = new Order({
       userId,
-      recipientName,   
-      shippingAddress, 
-      phone,           
-      products: formattedProducts,
-      totalPrice
+      username: username || 'Анонім',
+      items: items.map(item => ({
+        title: item.title || item.name || item.product_title, 
+        quantity: item.quantity,
+        price: item.price || item.product_price,
+        image: item.image || item.product_photo
+      })),
+      totalAmount
     });
 
     const savedOrder = await newOrder.save();
-    console.log("Успішно збережено!");
     res.status(201).json(savedOrder);
 
   } catch (error) {
-    console.error("ПОМИЛКА СЕРВЕРА:", error);
-    res.status(500).json({ message: error.message });
+    console.error("Помилка при створенні замовлення:", error);
+    res.status(500).json({ message: 'Помилка сервера при оформленні замовлення' });
   }
 });
 

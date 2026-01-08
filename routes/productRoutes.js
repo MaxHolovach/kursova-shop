@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const { Product } = require('../models/Product'); 
 
-// Отримати всі товари
 router.get('/', async (req, res) => {
   try {
     const products = await Product.find({});

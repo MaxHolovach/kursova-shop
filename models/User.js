@@ -4,7 +4,7 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true // Пошта має бути унікальною
+    unique: true
   },
   password: {
     type: String,
@@ -16,10 +16,9 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin'], // Може бути або юзер, або адмін
+    enum: ['user', 'admin'],
     default: 'user'
   },
-  // Кошик можна зберігати прямо в юзера для простоти
   cart: [
     {
       productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },

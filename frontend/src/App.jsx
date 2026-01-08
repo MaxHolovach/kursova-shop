@@ -11,6 +11,7 @@ import './App.css';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useCart } from './context/CartContext';
 
 const SERVER_URL = window.location.hostname === 'localhost' 
   ? 'http://localhost:5000' 
@@ -119,8 +120,7 @@ const getPriceValue = (priceStr) => {
 
 
 function App() {
-  const [cart, setCart] = useState([]);
-  
+  const { addToCart } = useCart();
   const [currentPage, setCurrentPage] = useState(1);
   const [currentSearchTerm, setCurrentSearchTerm] = useState('electronics');
   const [products, setProducts] = useState([]);
@@ -143,27 +143,23 @@ function App() {
   const handleAddToCart = (product) => {
     const newProduct = {
       _id: product._id,
+      asin: product._id,
       name: product.name,
+      title: product.name,
       image: getProxyImage(product.image),
+      product_photo: getProxyImage(product.image),
       price: getPriceValue(product.price),
+      product_price: product.price,
       brand: 'Amazon Product'
     };
     
-    setCart(prev => [...prev, newProduct]);
+    addToCart(newProduct);
 
     toast.success('Товар додано в кошик! 🛒', {
       position: "bottom-right",
       autoClose: 3000,
       theme: "dark",
     });
-  };
-
-  const removeFromCart = (productId) => {
-    setCart((prevCart) => prevCart.filter((item) => item._id !== productId));
-  };
-
-  const clearCart = () => {
-    setCart([]);
   };
 
   const formatProducts = (apiData) => {
@@ -336,7 +332,6 @@ function App() {
     }
   };
 
-  // --- ЕФЕКТИ ---
 
   useEffect(() => {
     const savedWishlist = localStorage.getItem('wishlist');
@@ -351,10 +346,6 @@ function App() {
     localStorage.setItem('wishlist', JSON.stringify(wishlist));
   }, [wishlist]);
   
-  useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
-  }, [cart]);
-
   useEffect(() => {
     if (view === 'shop') {
       loadProducts();
@@ -381,9 +372,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col font-sans">
       <ToastContainer />
-      {/* 👇 Передаємо cart.length у Header, щоб показувати кількість товарів */}
-      <Header user={user} onLogout={handleLogout} setView={setView} currentView={view} cartCount={cart.length} />
-
+      <Header user={user} onLogout={handleLogout} setView={setView} currentView={view} />
       <main className="flex-grow w-full px-4 py-6">
 
         {view === 'shop' && (
@@ -432,12 +421,7 @@ function App() {
         {view === 'login' && <Login onLoginSuccess={handleLoginSuccess} />}
         
         {view === 'cart' && (
-          <Cart
-            cart={cart}
-            removeFromCart={removeFromCart}
-            clearCart={clearCart}
-            setView={setView}
-          />
+             <Cart user={user} setView={setView} />
         )}
         
         {view === 'wishlist' && <Wishlist wishlist={wishlist} toggleWishlist={toggleWishlist} setView={setView} onProductClick={openProductDetails} />}
@@ -625,13 +609,10 @@ function App() {
           <div className="flex flex-col w-full">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
               {loading ? (
-                <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-400">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
-                  <p className="text-xl">Завантажую сторінку {currentPage}...</p>
-                </div>
+                <div className="col-span-full py-20 text-center">Завантаження...</div>
               ) : products.length > 0 ? (
                 products.map((product) => (
-                  <div key={product._id} onClick={() => openProductDetails(product)} className="cursor-pointer transform hover:-translate-y-1 transition-transform duration-300">
+                  <div key={product._id} onClick={() => openProductDetails(product)} className="cursor-pointer">
                     <ProductCard
                       product={product}
                       isLiked={wishlist.some(item => item._id === product._id)}
@@ -641,11 +622,14 @@ function App() {
                   </div>
                 ))
               ) : (
-                <div className="text-center w-full col-span-full py-20 text-gray-500 text-lg">
-                  {selectedBrand === 'Всі' && currentPage === 1 ? 'Введіть назву товару або оберіть бренд' : 'Товарів не знайдено'}
-                </div>
+                <div className="text-center col-span-full py-20">Товарів не знайдено</div>
               )}
             </div>
+             <div className="flex justify-center gap-4 mt-8">
+                 <button onClick={() => changePage(currentPage - 1)} disabled={currentPage===1} className="px-4 py-2 bg-gray-700 rounded">←</button>
+                 <span>{currentPage}</span>
+                 <button onClick={() => changePage(currentPage + 1)} className="px-4 py-2 bg-blue-600 rounded">→</button>
+             </div>
 
             {products.length > 0 && !loading && (
               <div className="flex justify-center items-center gap-6 mt-12 mb-8">
